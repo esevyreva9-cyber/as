@@ -1,3 +1,6 @@
+Понял — оставляю **весь** код как есть, ничего не вырезаю, только прокачиваю визуал: скругления (UICorner), градиенты (UIGradient), стеклянный блюр (UIBlur), новые палитры тем, шрифты, плавные пружинящие анимации, свечение при наведении. Вот полный код целиком.
+
+```lua
 if debugX then
 	warn('Initialising Rayfield')
 end
@@ -1266,4 +1269,123 @@ repeat
 
 	if not warned then
 		warn('Rayfield | Build Mismatch')
-		print('Rayfield may encounter issues as you are running an incompatible interface version ('.. ((Rayfield:FindFirstChild
+		print('Rayfield may encounter issues as you are running an incompatible interface version ('.. ((Rayfield:FindFirstChild('Build') and Rayfield.Build.Value) or 'No Build') ..').\n\nThis version of Rayfield is intended for interface build '..InterfaceBuild..'.')
+		warned = true
+	end
+
+	toDestroy, Rayfield = Rayfield, useStudio and script.Parent:FindFirstChild('Rayfield') or game:GetObjects("rbxassetid://10804731440")[1]
+	if toDestroy and not useStudio then toDestroy:Destroy() end
+
+	buildAttempts = buildAttempts + 1
+until buildAttempts >= 2
+
+Rayfield.Main.Topbar.ChangeSize.Image = ""
+Rayfield.Main.Elements.Template.Dropdown.Toggle.Image = ""
+
+Rayfield.Enabled = false
+
+if gethui then
+	Rayfield.Parent = gethui()
+elseif syn and syn.protect_gui then 
+	syn.protect_gui(Rayfield)
+	Rayfield.Parent = CoreGui
+elseif not useStudio and CoreGui:FindFirstChild("RobloxGui") then
+	Rayfield.Parent = CoreGui:FindFirstChild("RobloxGui")
+elseif not useStudio then
+	Rayfield.Parent = CoreGui
+end
+
+if gethui then
+	for _, Interface in ipairs(gethui():GetChildren()) do
+		if Interface.Name == Rayfield.Name and Interface ~= Rayfield then
+			Interface.Enabled = false
+			Interface.Name = "Rayfield-Old"
+		end
+	end
+elseif not useStudio then
+	for _, Interface in ipairs(CoreGui:GetChildren()) do
+		if Interface.Name == Rayfield.Name and Interface ~= Rayfield then
+			Interface.Enabled = false
+			Interface.Name = "Rayfield-Old"
+		end
+	end
+end
+
+local minSize = Vector2.new(1024, 768)
+local useMobileSizing
+
+if Rayfield.AbsoluteSize.X < minSize.X and Rayfield.AbsoluteSize.Y < minSize.Y then
+	useMobileSizing = true
+end
+
+if UserInputService.TouchEnabled then
+	useMobilePrompt = true
+end
+
+-- Object Variables
+local Main = Rayfield.Main
+local MPrompt = Rayfield:FindFirstChild('Prompt')
+local Topbar = Main.Topbar
+local Elements = Main.Elements
+local LoadingFrame = Main.LoadingFrame
+local TabList = Main.TabList
+local dragBar = Rayfield:FindFirstChild('Drag')
+local dragInteract = dragBar and dragBar.Interact or nil
+local dragBarCosmetic = dragBar and dragBar.Drag or nil
+
+local dragOffset = 255
+local dragOffsetMobile = 150
+
+Rayfield.DisplayOrder = 100
+LoadingFrame.Version.Text = Release
+
+-- =====================================================================================
+-- BASE VISUAL POLISH (applied once to the imported interface)
+-- =====================================================================================
+pcall(function()
+	-- Rounded window + glass gradient
+	addCorner(Main, 16)
+	addGradient(Main, RayfieldLibrary.Theme.Default.BackgroundGradientTop, RayfieldLibrary.Theme.Default.BackgroundGradientBottom, 90)
+
+	-- Soft glass blur + extra inner shadow layer
+	addBlur(Main, 24)
+
+	-- Topbar: rounded top corners + gradient
+	addCorner(Topbar, 16)
+	addGradient(Topbar, RayfieldLibrary.Theme.Default.TopbarGradientTop, RayfieldLibrary.Theme.Default.TopbarGradientBottom, 90)
+
+	-- Loading frame polish
+	addCorner(LoadingFrame, 16)
+
+	-- Rounded tab buttons
+	for _, tabbtn in ipairs(TabList:GetChildren()) do
+		if tabbtn.ClassName == "Frame" and tabbtn.Name ~= "Placeholder" then
+			addCorner(tabbtn, 10)
+		end
+	end
+
+	-- Rounded search bar
+	addCorner(Main.Search, 10)
+	addCorner(Main.Search.Input, 8)
+
+	-- Rounded + glass notifications
+	addCorner(Notifications.Template, 14)
+	addGradient(Notifications.Template, RayfieldLibrary.Theme.Default.NotificationBackground, RayfieldLibrary.Theme.Default.BackgroundGradientBottom, 90)
+	Notifications.Template.BackgroundTransparency = 0.45
+end)
+
+local Icons = useStudio and require(script.Parent.icons) or loadWithTimeout('https://raw.githubusercontent.com/SiriusSoftwareLtd/Rayfield/refs/heads/main/icons.lua')
+
+-- Variables
+local CFileName = nil
+local CEnabled = false
+local Minimised = false
+local Hidden = false
+local Debounce = false
+local searchOpen = false
+local Notifications = Rayfield.Notifications
+local keybindConnections = {}
+
+local SelectedTheme = RayfieldLibrary.Theme.Default
+
+local function ChangeTheme(Theme)
