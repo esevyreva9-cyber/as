@@ -547,6 +547,45 @@ function NeverLose:CreateWindow(Config)
 		end
 	end))
 
+	-- =========================================================
+	-- ==== ДОБАВЛЕНО: AddTabLabel (заголовок категории) ====
+	-- =========================================================
+	function Window:AddTabLabel(Name)
+		local TabLabel = Instance.new("TextLabel")
+
+		TabLabel.Name = NeverLose.RandomString()
+		TabLabel.Parent = LeftScrolling
+		TabLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+		TabLabel.BackgroundTransparency = 1.000
+		TabLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
+		TabLabel.BorderSizePixel = 0
+		TabLabel.Size = UDim2.new(1, -7, 0, 15)
+		TabLabel.ZIndex = 8
+		TabLabel.Font = Enum.Font.GothamBold
+		TabLabel.Text = Name
+		TabLabel.TextColor3 = Color3.fromRGB(120, 120, 130)
+		TabLabel.TextSize = 11.000
+		TabLabel.TextTransparency = 0.4
+		TabLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+		local SetRender = LPH_NO_VIRTUALIZE(function(val)
+			if val then
+				NeverLose.PlayAnimate(TabLabel, SlowyTween, {
+					TextTransparency = 0.4
+				})
+			else
+				NeverLose.PlayAnimate(TabLabel, SlowyTween, {
+					TextTransparency = 1
+				})
+			end
+		end)
+
+		SetRender(Window.Signal:GetValue())
+		Window.Signal:Connect(SetRender)
+
+		return TabLabel
+	end
+
 	function Window:AddTab(Config)
 		Config = Config or {}
 		Config.Name = Config.Name or "Tab"
@@ -883,8 +922,6 @@ function NeverLose:CreateWindow(Config)
 
 				return handle
 			end
-
-			-- ЗАГЛУШКИ УБРАНЫ ЗДЕСЬ, ЧТОБЫ AddToggle/AddSlider/AddDropdown РАБОТАЛИ
 
 			return Section
 		end
