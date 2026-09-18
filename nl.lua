@@ -391,8 +391,7 @@ function NeverLose:CreateOptionWindow(Frame: Frame , Zindex)
 	Window.Signal:Connect(Window.SetRender)
 	return Window;
 end;
-
--- ==== УПРОЩЁННЫЙ СОЗДАТЕЛЬ ОКОН ====
+-- ==== СОЗДАТЕЛЬ ОКОН ====
 function NeverLose:CreateWindow(Config)
 	Config = Config or {};
 	Config.Name = Config.Name or "Neverlose"
@@ -548,41 +547,29 @@ function NeverLose:CreateWindow(Config)
 	end))
 
 	-- =========================================================
-	-- ==== ДОБАВЛЕНО: AddTabLabel (заголовок категории) ====
+	-- ==== ЗАГОЛОВОК КАТЕГОРИИ (AddTabLabel) ====
 	-- =========================================================
 	function Window:AddTabLabel(Name)
 		local TabLabel = Instance.new("TextLabel")
-
 		TabLabel.Name = NeverLose.RandomString()
 		TabLabel.Parent = LeftScrolling
-		TabLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-		TabLabel.BackgroundTransparency = 1.000
-		TabLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-		TabLabel.BorderSizePixel = 0
+		TabLabel.BackgroundTransparency = 1
 		TabLabel.Size = UDim2.new(1, -7, 0, 15)
 		TabLabel.ZIndex = 8
 		TabLabel.Font = Enum.Font.GothamBold
 		TabLabel.Text = Name
 		TabLabel.TextColor3 = Color3.fromRGB(120, 120, 130)
-		TabLabel.TextSize = 11.000
+		TabLabel.TextSize = 11
 		TabLabel.TextTransparency = 0.4
 		TabLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 		local SetRender = LPH_NO_VIRTUALIZE(function(val)
-			if val then
-				NeverLose.PlayAnimate(TabLabel, SlowyTween, {
-					TextTransparency = 0.4
-				})
-			else
-				NeverLose.PlayAnimate(TabLabel, SlowyTween, {
-					TextTransparency = 1
-				})
-			end
+			NeverLose.PlayAnimate(TabLabel, SlowyTween, {
+				TextTransparency = val and 0.4 or 1
+			})
 		end)
-
 		SetRender(Window.Signal:GetValue())
 		Window.Signal:Connect(SetRender)
-
 		return TabLabel
 	end
 
@@ -685,20 +672,11 @@ function NeverLose:CreateWindow(Config)
 		end
 
 		table.insert(Window.Tabs, Tab)
-		if Window.Tabs[Window.CurrentTab] == Tab then
-			Tab.SetValue(true)
-		else
-			Tab.SetValue(false)
-		end
+		if Window.Tabs[Window.CurrentTab] == Tab then Tab.SetValue(true) else Tab.SetValue(false) end
 
 		local btn = NeverLose:CreateInput(TabButton, function()
 			for i, v in next, Window.Tabs do
-				if v == Tab then
-					v.SetValue(true)
-					Window.CurrentTab = i
-				else
-					v.SetValue(false)
-				end
+				if v == Tab then v.SetValue(true); Window.CurrentTab = i else v.SetValue(false) end
 			end
 		end)
 
@@ -712,8 +690,7 @@ function NeverLose:CreateWindow(Config)
 				NeverLose.PlayAnimate(TabButton, SlowyTween, { BackgroundTransparency = 1 })
 			end
 		end)
-
-		function Tab:AddSection(Config)
+				function Tab:AddSection(Config)
 			Config = Config or {}
 			Config.Name = Config.Name or "SECTION"
 			Config.Position = Config.Position or 'left'
@@ -933,7 +910,6 @@ function NeverLose:CreateWindow(Config)
 
 	return Window
 end
-
 function NeverLose:CreateNotification()
 	local Notifier = {}
 	local Notification = Instance.new("Frame")
@@ -1205,101 +1181,4 @@ function NeverLose:CreateIndicator()
 	return Indicators
 end
 
--- =========================================================
--- ==== СОЗДАНИЕ ОКНА И ЗАПОЛНЕНИЕ ФУНКЦИЯМИ ====
--- =========================================================
-
-local Notification = NeverLose:CreateNotification();
-local Logging = NeverLose:CreateLogger();
-local Indicator = NeverLose:CreateIndicator();
-
-local window = NeverLose:CreateWindow({
-	Logo = NeverLose.GlobalLogo,
-	Name = "Neverlose",
-	Content = "Roblox",
-	Size = NeverLose.Scales.Default,
-	ConfigFolder = "NeverLoseConfigs",
-	Enable3DRenderer = false,
-	Keybind = "Insert"
-});
-
-local HC = Indicator.new({
-	Name = "HC",
-	Icon = 'crosshairs',
-	Color = 'Red',
-})
-
-local Rage = window:AddTab({
-	Icon = 'crosshairs',
-	Name = "Rage",
-})
-
-local Legit = window:AddTab({
-	Icon = 'mouse-scrollwheel',
-	Name = "Legit"
-})
-
-local Raging = Rage:AddSection({ Name = "MAIN" })
-local Selection = Rage:AddSection({ Name = "SELECTION", Position = 'left' })
-local Other = Rage:AddSection({ Name = "OTHER", Position = 'right' })
-local AntiAim = Rage:AddSection({ Name = "ANTI-AIM", Position = 'right' })
-
-Raging:AddLabel('Ts so skbidi\nfr noi cap', true)
-
-local EnabledRage = Raging:AddLabel('Enabled')
-EnabledRage:AddToggle({
-	Default = false,
-	Callback = print,
-	Flag = "Ragebot",
-})
-
-Selection:AddLabel('Quick Stop'):AddToggle({
-	Default = false,
-	Flag = "astop",
-	Callback = print
-})
-
-Other:AddLabel('Remove Recoil'):AddToggle({
-	Default = false,
-	Flag = "removerecoil",
-	Callback = print
-})
-
-Other:AddLabel('Remove Spread'):AddToggle({
-	Default = false,
-	Flag = "removespread",
-	Callback = print
-})
-
-AntiAim:AddLabel('Enabled'):AddToggle({
-	Default = false,
-	Flag = "aa",
-	Callback = print
-})
-
-Notification.new({
-	Title = "NeverLose",
-	Content = "Меню загружено!",
-	Duration = 5,
-})
-
-Logging.new("crosshairs",'Hit thatguy in the neck for 100 damage',15)
-
-HC:SetRender(true);
-
-task.spawn(function()
-	while true do task.wait(3)
-		HC:SetColor('Red')
-		HC:SetText("FL")
-		task.wait(3);
-		HC:SetColor('Green');
-		HC:SetText("AUTO")
-		task.wait(3)
-		HC:SetColor('White')
-		HC:SetText("HC")
-		task.wait(1)
-		HC:SetRender(false);
-		task.wait(1)
-		HC:SetRender(true);
-	end
-end)
+return NeverLose;
